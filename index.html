@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Loan EMI Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B1E3D;
+    --navy2: #122954;
+    --teal: #0E7C6B;
+    --teal-light: #12A38D;
+    --teal-bg: #E6F4F1;
+    --gold: #C9952A;
+    --gold-bg: #FDF3E3;
+    --red: #C0392B;
+    --red-bg: #FDECEA;
+    --blue: #1A5DAB;
+    --blue-bg: #E8F0FA;
+    --text: #1A1F2E;
+    --text2: #4A5568;
+    --text3: #8A95A3;
+    --border: #DDE3EC;
+    --bg: #F5F7FA;
+    --white: #FFFFFF;
+    --card-shadow: 0 2px 12px rgba(11,30,61,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Header */
+  .header {
+    background: var(--navy);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--teal-light), var(--teal));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header h1 { color: #fff; font-size: 18px; font-weight: 600; }
+  .header p { color: #7A9CC0; font-size: 12px; }
+  .badge {
+    background: rgba(14,124,107,0.3);
+    color: #5FDDCC;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+
+  .main { max-width: 1300px; margin: 0 auto; padding: 28px 24px; }
+
+  /* Cards */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title span.dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal-light);
+    display: inline-block;
+  }
+
+  /* Grid layouts */
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .section { margin-bottom: 20px; }
+
+  /* Input Groups */
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-group label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+  }
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .input-prefix, .input-suffix {
+    position: absolute;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    pointer-events: none;
+  }
+  .input-prefix { left: 12px; }
+  .input-suffix { right: 12px; }
+  .input-wrapper input[type="number"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+  .input-wrapper input::-webkit-inner-spin-button,
+  .input-wrapper input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .input-wrapper input:focus { border-color: var(--teal-light); }
+  .has-prefix input { padding-left: 32px; }
+  .has-suffix input { padding-right: 32px; }
+
+  /* Range slider */
+  .slider-wrap { display: flex; flex-direction: column; gap: 4px; }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    background: var(--teal-light);
+    border-radius: 50%;
+    border: 3px solid var(--white);
+    box-shadow: 0 0 0 2px var(--teal-light);
+    cursor: pointer;
+  }
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  /* Summary Metrics */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .metric {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .metric::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .metric.teal::before { background: var(--teal-light); }
+  .metric.gold::before { background: var(--gold); }
+  .metric.red::before { background: var(--red); }
+  .metric.blue::before { background: var(--blue); }
+  .metric.navy::before { background: var(--navy2); }
+  .metric-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .metric-value { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 600; color: var(--text); line-height: 1.2; }
+  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .metric-value.teal { color: var(--teal); }
+  .metric-value.gold { color: var(--gold); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.blue { color: var(--blue); }
+  .metric-value.savings { color: var(--teal); }
+
+  /* Events */
+  .events-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .event-list { display: flex; flex-direction: column; gap: 8px; min-height: 40px; }
+  .event-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+  }
+  .event-item:hover { border-color: var(--teal-light); }
+  .event-item .event-icon {
+    width: 28px; height: 28px;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .event-item.rate-event .event-icon { background: var(--blue-bg); color: var(--blue); }
+  .event-item.pay-event .event-icon { background: var(--teal-bg); color: var(--teal); }
+  .event-text { flex: 1; }
+  .event-text strong { display: block; font-size: 13px; font-weight: 500; color: var(--text); }
+  .event-text span { font-size: 11px; color: var(--text3); }
+  .btn-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text3);
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all 0.15s;
+  }
+  .btn-remove:hover { background: var(--red-bg); color: var(--red); }
+
+  /* Add Event Form */
+  .add-event-form {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--border);
+  }
+  .add-event-form .input-group { min-width: 110px; flex: 1; }
+  .add-event-form label { font-size: 11px; }
+  .add-event-form input[type="number"] {
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    width: 100%;
+    appearance: textfield;
+    -moz-appearance: textfield;
+  }
+  .add-event-form input::-webkit-inner-spin-button,
+  .add-event-form input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .add-event-form input:focus { border-color: var(--teal-light); }
+
+  /* Buttons */
+  .btn {
+    padding: 9px 16px;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .btn-teal { background: var(--teal-light); color: #fff; }
+  .btn-teal:hover { background: var(--teal); }
+  .btn-navy { background: var(--navy); color: #fff; }
+  .btn-navy:hover { background: var(--navy2); }
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--border);
+    color: var(--text2);
+  }
+  .btn-outline:hover { border-color: var(--teal-light); color: var(--teal); }
+  .btn-calc {
+    width: 100%;
+    padding: 13px;
+    font-size: 15px;
+    justify-content: center;
+    margin-top: 6px;
+    background: linear-gradient(135deg, var(--teal-light), var(--teal));
+    color: #fff;
+    letter-spacing: 0.3px;
+  }
+  .btn-calc:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(14,124,107,0.35); }
+
+  /* Charts */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .chart-wrap { position: relative; width: 100%; }
+
+  /* Progress bar */
+  .progress-container { margin: 14px 0 6px; }
+  .progress-label { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
+  .progress-bar {
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* Table */
+  .table-section { background: var(--white); border-radius: var(--radius); box-shadow: var(--card-shadow); border: 1px solid var(--border); overflow: hidden; }
+  .table-header {
+    padding: 16px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .table-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .table-controls { display: flex; gap: 8px; align-items: center; }
+  .table-filter {
+    padding: 7px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--white);
+    outline: none;
+    cursor: pointer;
+  }
+  .table-filter:focus { border-color: var(--teal-light); }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead { background: var(--bg); }
+  th {
+    padding: 11px 14px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  th:first-child { text-align: center; }
+  td {
+    padding: 10px 14px;
+    text-align: right;
+    border-bottom: 1px solid var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  td:first-child { text-align: center; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  tr:hover td { background: #F8FAFD; }
+  tr.highlight-change td { background: #FFFBF0; }
+  tr.highlight-prepay td { background: #F0FAF7; }
+  td.principal { color: var(--teal); font-weight: 500; }
+  td.interest { color: var(--gold); }
+  td.balance { color: var(--navy2); font-weight: 500; }
+  td.prepay { color: var(--blue); font-weight: 500; }
+  .badge-event {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+  .badge-rate { background: var(--blue-bg); color: var(--blue); }
+  .badge-pay { background: var(--teal-bg); color: var(--teal); }
+
+  /* Pagination */
+  .pagination {
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .page-info { font-size: 12px; color: var(--text3); }
+  .page-btns { display: flex; gap: 6px; }
+  .page-btn {
+    padding: 6px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+  .page-btn:hover:not(:disabled) { border-color: var(--teal-light); color: var(--teal); }
+  .page-btn.active { background: var(--teal-light); border-color: var(--teal-light); color: #fff; }
+  .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* No events */
+  .no-events { font-size: 12px; color: var(--text3); font-style: italic; padding: 6px 0; text-align: center; }
+
+  /* Tag chips for event display */
+  .event-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .chip {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .chip.rate { background: var(--blue-bg); color: var(--blue); }
+  .chip.pay { background: var(--teal-bg); color: var(--teal); }
+  .chip-remove {
+    cursor: pointer;
+    font-size: 12px;
+    line-height: 1;
+    opacity: 0.6;
+    transition: opacity 0.1s;
+  }
+  .chip-remove:hover { opacity: 1; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 18px 0; }
+
+  /* Tooltip */
+  .tip { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+    .grid3 { grid-template-columns: 1fr 1fr; }
+    .events-container { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .main { padding: 16px 12px; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+    .grid3, .grid2 { grid-template-columns: 1fr; }
+    .header { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">🏠</div>
+    <div>
+      <h1>Home Loan EMI Calculator</h1>
+      <p>Bank-grade amortization with rate changes & prepayments</p>
+    </div>
+  </div>
+  <span class="badge">HDFC / SBI / ICICI Style</span>
+</div>
+
+<div class="main">
+
+  <!-- Loan Inputs -->
+  <div class="section card" style="margin-bottom:20px;">
+    <div class="card-title"><span class="dot"></span>Loan Parameters</div>
+    <div class="grid3">
+      <div class="input-group">
+        <label>Loan Amount (Principal)</label>
+        <div class="input-wrapper has-prefix">
+          <span class="input-prefix">₹</span>
+          <input type="number" id="principal" value="5000000" min="100000" max="999999999" step="10000">
+        </div>
+        <div class="slider-wrap" style="margin-top:8px;">
+          <input type="range" id="principalSlider" min="500000" max="50000000" step="100000" value="5000000">
+          <div class="slider-labels"><span>₹5L</span><span>₹5Cr</span></div>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Annual Interest Rate</label>
+        <div class="input-wrapper has-suffix">
+          <input type="number" id="rate" value="8.5" min="1" max="30" step="0.05">
+          <span class="input-suffix">%</span>
+        </div>
+        <div class="slider-wrap" style="margin-top:8px;">
+          <input type="range" id="rateSlider" min="5" max="20" step="0.05" value="8.5">
+          <div class="slider-labels"><span>5%</span><span>20%</span></div>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Loan Tenure</label>
+        <div class="input-wrapper has-suffix">
+          <input type="number" id="tenure" value="20" min="1" max="30" step="1">
+          <span class="input-suffix">yrs</span>
+        </div>
+        <div class="slider-wrap" style="margin-top:8px;">
+          <input type="range" id="tenureSlider" min="1" max="30" step="1" value="20">
+          <div class="slider-labels"><span>1 yr</span><span>30 yrs</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Prepayment mode -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+      <span style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;">Prepayment reduces</span>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="radio" name="prepayMode" value="emi" id="reduceEMI"> 
+        <span style="font-size:13px;">Monthly EMI</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="radio" name="prepayMode" value="tenure" id="reduceTenure" checked>
+        <span style="font-size:13px;">Loan Tenure</span>
+      </label>
+      <span class="tip" style="margin-top:0;margin-left:4px;">— Banks typically reduce tenure by default</span>
+    </div>
+
+    <button class="btn btn-calc" onclick="calculate()">⚡ Calculate EMI</button>
+  </div>
+
+  <!-- Events Section -->
+  <div class="events-container">
+    <!-- Rate Changes -->
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--blue)"></span>Interest Rate Changes</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Simulate RBI repo rate changes or bank rate revisions</p>
+      <div class="event-list" id="rateEventList">
+        <div class="no-events" id="noRateEvents">No rate changes added</div>
+      </div>
+      <div class="add-event-form">
+        <div class="input-group">
+          <label>After Month</label>
+          <input type="number" id="rateMonth" placeholder="e.g. 24" min="1" max="360">
+        </div>
+        <div class="input-group">
+          <label>New Rate (%)</label>
+          <input type="number" id="rateNewVal" placeholder="e.g. 9.0" min="1" max="30" step="0.05">
+        </div>
+        <button class="btn btn-outline" onclick="addRateChange()" style="margin-bottom:1px;">+ Add</button>
+      </div>
+      <div class="tip">Rate change recalculates EMI on remaining balance from that month onward.</div>
+    </div>
+
+    <!-- Extra Payments -->
+    <div class="card">
+      <div class="card-title"><span class="dot" style="background:var(--teal-light)"></span>Extra / Lump-Sum Payments</div>
+      <p style="font-size:12px;color:var(--text3);margin-bottom:12px;">Add one-time prepayments (bonus, inheritance, annual savings)</p>
+      <div class="event-list" id="prepayEventList">
+        <div class="no-events" id="noPrepayEvents">No prepayments added</div>
+      </div>
+      <div class="add-event-form">
+        <div class="input-group">
+          <label>After Month</label>
+          <input type="number" id="prepayMonth" placeholder="e.g. 12" min="1" max="360">
+        </div>
+        <div class="input-group">
+          <label>Amount (₹)</label>
+          <input type="number" id="prepayAmount" placeholder="e.g. 200000" min="1" step="1000">
+        </div>
+        <button class="btn btn-outline" onclick="addPrepayment()" style="margin-bottom:1px;">+ Add</button>
+      </div>
+      <div class="tip">Applies directly to principal. EMI or tenure adjusts per mode selected above.</div>
+    </div>
+  </div>
+
+  <!-- Summary Metrics -->
+  <div class="metrics-grid" id="metricsSection" style="display:none;">
+    <div class="metric teal">
+      <div class="metric-label">Monthly EMI</div>
+      <div class="metric-value teal" id="mEMI">—</div>
+      <div class="metric-sub" id="mEMISub">Initial installment</div>
+    </div>
+    <div class="metric gold">
+      <div class="metric-label">Total Interest</div>
+      <div class="metric-value gold" id="mInterest">—</div>
+      <div class="metric-sub" id="mInterestSub">Over loan period</div>
+    </div>
+    <div class="metric red">
+      <div class="metric-label">Total Payment</div>
+      <div class="metric-value red" id="mTotal">—</div>
+      <div class="metric-sub" id="mTotalSub">Principal + Interest</div>
+    </div>
+    <div class="metric blue">
+      <div class="metric-label">Actual Tenure</div>
+      <div class="metric-value blue" id="mTenure">—</div>
+      <div class="metric-sub">Effective loan period</div>
+    </div>
+    <div class="metric navy">
+      <div class="metric-label">Interest Saved</div>
+      <div class="metric-value savings" id="mSaved">—</div>
+      <div class="metric-sub" id="mSavedSub">Via prepayments</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-grid" id="chartsSection" style="display:none;">
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Loan Balance Over Time</div>
+      <div class="chart-wrap" style="height:280px;">
+        <canvas id="balanceChart"></canvas>
+      </div>
+      <div class="legend" style="margin-top:12px;">
+        <div class="legend-item"><div class="legend-dot" style="background:#0E7C6B;"></div>Outstanding Balance</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C9952A;"></div>Cumulative Interest</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1A5DAB;"></div>Cumulative Principal</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="dot"></span>Principal vs Interest Breakdown</div>
+      <div class="chart-wrap" style="height:200px;">
+        <canvas id="pieChart"></canvas>
+      </div>
+      <div id="breakdownDetails" style="margin-top:16px;"></div>
+      <div class="chart-wrap" style="height:100px;margin-top:12px;">
+        <canvas id="yearlyBarChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Amortization Table -->
+  <div class="table-section" id="tableSection" style="display:none;">
+    <div class="table-header">
+      <div>
+        <div class="table-title">📋 Full Amortization Schedule</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px;">Month-by-month loan breakdown</div>
+      </div>
+      <div class="table-controls">
+        <select class="table-filter" id="rowFilter" onchange="renderTable()">
+          <option value="all">All Rows</option>
+          <option value="events">Events Only</option>
+          <option value="yearly">Year End Only</option>
+        </select>
+        <button class="btn btn-outline" onclick="downloadCSV()" style="font-size:12px;padding:7px 12px;">⬇ CSV</button>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Date</th>
+            <th>EMI (₹)</th>
+            <th>Principal (₹)</th>
+            <th>Interest (₹)</th>
+            <th>Extra Pay (₹)</th>
+            <th>Outstanding (₹)</th>
+            <th>Cumul. Interest (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+</div>
+
+<script>
+// State
+let rateChanges = [];
+let prepayments = [];
+let schedule = [];
+let baseSchedule = [];
+let balanceChartInst = null;
+let pieChartInst = null;
+let yearlyChartInst = null;
+let currentPage = 1;
+const ROWS_PER_PAGE = 24;
+
+// Helpers
+function fmt(n) {
+  return Math.round(n).toLocaleString('en-IN');
+}
+function fmtDec(n, d=2) {
+  return n.toFixed(d);
+}
+function monthLabel(m) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now = new Date();
+  const d = new Date(now.getFullYear(), now.getMonth() + m - 1, 1);
+  return months[d.getMonth()] + "'" + String(d.getFullYear()).slice(2);
+}
+
+// Sync sliders
+document.getElementById('principal').addEventListener('input', e => document.getElementById('principalSlider').value = e.target.value);
+document.getElementById('principalSlider').addEventListener('input', e => document.getElementById('principal').value = e.target.value);
+document.getElementById('rate').addEventListener('input', e => document.getElementById('rateSlider').value = e.target.value);
+document.getElementById('rateSlider').addEventListener('input', e => document.getElementById('rate').value = e.target.value);
+document.getElementById('tenure').addEventListener('input', e => document.getElementById('tenureSlider').value = e.target.value);
+document.getElementById('tenureSlider').addEventListener('input', e => document.getElementById('tenure').value = e.target.value);
+
+// Add rate change
+function addRateChange() {
+  const m = parseInt(document.getElementById('rateMonth').value);
+  const r = parseFloat(document.getElementById('rateNewVal').value);
+  const tenure = parseInt(document.getElementById('tenure').value) * 12;
+  if (!m || !r || m < 1 || m > tenure || r < 0.1 || r > 50) {
+    alert('Please enter valid month and rate values.');
+    return;
+  }
+  if (rateChanges.find(x => x.month === m)) {
+    rateChanges = rateChanges.filter(x => x.month !== m);
+  }
+  rateChanges.push({ month: m, rate: r });
+  rateChanges.sort((a,b) => a.month - b.month);
+  document.getElementById('rateMonth').value = '';
+  document.getElementById('rateNewVal').value = '';
+  renderRateList();
+  calculate();
+}
+
+function removeRateChange(m) {
+  rateChanges = rateChanges.filter(x => x.month !== m);
+  renderRateList();
+  calculate();
+}
+
+function renderRateList() {
+  const el = document.getElementById('rateEventList');
+  document.getElementById('noRateEvents').style.display = rateChanges.length ? 'none' : 'block';
+  const existing = el.querySelectorAll('.event-item');
+  existing.forEach(e => e.remove());
+  rateChanges.forEach(ev => {
+    const div = document.createElement('div');
+    div.className = 'event-item rate-event';
+    div.innerHTML = `
+      <div class="event-icon">📈</div>
+      <div class="event-text">
+        <strong>Month ${ev.month} → Rate: ${ev.rate}% p.a.</strong>
+        <span>New EMI calculated on remaining balance</span>
+      </div>
+      <button class="btn-remove" onclick="removeRateChange(${ev.month})">✕</button>
+    `;
+    el.appendChild(div);
+  });
+}
+
+// Add prepayment
+function addPrepayment() {
+  const m = parseInt(document.getElementById('prepayMonth').value);
+  const amt = parseFloat(document.getElementById('prepayAmount').value);
+  const tenure = parseInt(document.getElementById('tenure').value) * 12;
+  if (!m || !amt || m < 1 || m > tenure || amt < 1) {
+    alert('Please enter valid month and amount.');
+    return;
+  }
+  if (prepayments.find(x => x.month === m)) {
+    prepayments = prepayments.filter(x => x.month !== m);
+  }
+  prepayments.push({ month: m, amount: amt });
+  prepayments.sort((a,b) => a.month - b.month);
+  document.getElementById('prepayMonth').value = '';
+  document.getElementById('prepayAmount').value = '';
+  renderPrepayList();
+  calculate();
+}
+
+function removePrepayment(m) {
+  prepayments = prepayments.filter(x => x.month !== m);
+  renderPrepayList();
+  calculate();
+}
+
+function renderPrepayList() {
+  const el = document.getElementById('prepayEventList');
+  document.getElementById('noPrepayEvents').style.display = prepayments.length ? 'none' : 'block';
+  const existing = el.querySelectorAll('.event-item');
+  existing.forEach(e => e.remove());
+  prepayments.forEach(ev => {
+    const div = document.createElement('div');
+    div.className = 'event-item pay-event';
+    div.innerHTML = `
+      <div class="event-icon">💰</div>
+      <div class="event-text">
+        <strong>Month ${ev.month} → ₹${fmt(ev.amount)}</strong>
+        <span>Lump-sum applied to principal</span>
+      </div>
+      <button class="btn-remove" onclick="removePrepayment(${ev.month})">✕</button>
+    `;
+    el.appendChild(div);
+  });
+}
+
+// Core EMI calculation
+function calcEMI(principal, annualRate, months) {
+  const r = annualRate / 12 / 100;
+  if (r === 0) return principal / months;
+  return principal * r * Math.pow(1 + r, months) / (Math.pow(1 + r, months) - 1);
+}
+
+// Build full schedule
+function buildSchedule(principal, annualRate, tenureMonths, rateEvts, prepayEvts, prepayMode) {
+  let balance = principal;
+  let currentRate = annualRate;
+  let remainingMonths = tenureMonths;
+  let emi = calcEMI(balance, currentRate, remainingMonths);
+  let schedule = [];
+  let cumulInterest = 0;
+  let cumulPrincipal = 0;
+  let totalPrepay = 0;
+
+  // Sort events
+  const rateMap = {};
+  rateEvts.forEach(e => rateMap[e.month] = e.rate);
+  const prepayMap = {};
+  prepayEvts.forEach(e => prepayMap[e.month] = e.amount);
+
+  let month = 1;
+  while (balance > 0.5 && month <= 600) {
+    // Apply rate change at start of this month
+    if (rateMap[month] !== undefined) {
+      currentRate = rateMap[month];
+      const rem = tenureMonths - month + 1;
+      if (prepayMode === 'emi') {
+        emi = calcEMI(balance, currentRate, rem > 0 ? rem : 1);
+      } else {
+        remainingMonths = rem;
+        emi = calcEMI(balance, currentRate, remainingMonths > 0 ? remainingMonths : 1);
+      }
+    }
+
+    const monthlyRate = currentRate / 12 / 100;
+    const interestPart = balance * monthlyRate;
+    let principalPart = Math.min(emi - interestPart, balance);
+    if (principalPart < 0) principalPart = 0;
+    const actualEMI = interestPart + principalPart;
+
+    cumulInterest += interestPart;
+    cumulPrincipal += principalPart;
+    balance -= principalPart;
+
+    // Prepayment after EMI
+    let prepayAmt = 0;
+    if (prepayMap[month] !== undefined) {
+      prepayAmt = Math.min(prepayMap[month], balance);
+      balance -= prepayAmt;
+      totalPrepay += prepayAmt;
+      cumulPrincipal += prepayAmt;
+      // Recalculate EMI
+      if (balance > 0.5) {
+        remainingMonths = tenureMonths - month;
+        if (prepayMode === 'emi') {
+          emi = calcEMI(balance, currentRate, remainingMonths > 0 ? remainingMonths : 1);
+        }
+        // if tenure mode, EMI stays same, tenure reduces (handled naturally)
+      }
+    }
+
+    schedule.push({
+      month,
+      date: monthLabel(month),
+      emi: actualEMI,
+      principal: principalPart,
+      interest: interestPart,
+      prepay: prepayAmt,
+      balance: Math.max(0, balance),
+      cumulInterest,
+      cumulPrincipal,
+      rate: currentRate,
+      hasRateChange: rateMap[month] !== undefined,
+      hasPrepay: prepayAmt > 0
+    });
+
+    if (balance < 0.5) break;
+    month++;
+    remainingMonths--;
+  }
+
+  return schedule;
+}
+
+// Build base schedule (no events)
+function buildBaseSchedule(principal, annualRate, tenureMonths) {
+  return buildSchedule(principal, annualRate, tenureMonths, [], [], 'tenure');
+}
+
+// Main calculate function
+function calculate() {
+  const principal = parseFloat(document.getElementById('principal').value) || 0;
+  const rate = parseFloat(document.getElementById('rate').value) || 0;
+  const tenureYears = parseFloat(document.getElementById('tenure').value) || 0;
+  const tenureMonths = Math.round(tenureYears * 12);
+  const prepayMode = document.querySelector('input[name="prepayMode"]:checked').value;
+
+  if (principal <= 0 || rate <= 0 || tenureMonths <= 0) return;
+
+  schedule = buildSchedule(principal, rate, tenureMonths, rateChanges, prepayments, prepayMode);
+  baseSchedule = buildBaseSchedule(principal, rate, tenureMonths);
+
+  updateMetrics(principal, rate, tenureMonths);
+  renderCharts();
+  currentPage = 1;
+  renderTable();
+
+  // Show sections
+  document.getElementById('metricsSection').style.display = 'grid';
+  document.getElementById('chartsSection').style.display = 'grid';
+  document.getElementById('tableSection').style.display = 'block';
+}
+
+function updateMetrics(principal, rate, tenureMonths) {
+  const initialEMI = calcEMI(principal, rate, tenureMonths);
+  const totalInterest = schedule.reduce((s, r) => s + r.interest, 0);
+  const totalPrepay = schedule.reduce((s, r) => s + r.prepay, 0);
+  const totalPayment = schedule.reduce((s, r) => s + r.emi, 0) + totalPrepay;
+  const actualMonths = schedule.length;
+  const baseInterest = baseSchedule.reduce((s, r) => s + r.interest, 0);
+  const interestSaved = baseInterest - totalInterest;
+
+  document.getElementById('mEMI').textContent = '₹' + fmt(initialEMI);
+  document.getElementById('mEMISub').textContent = rate + '% per annum';
+  document.getElementById('mInterest').textContent = '₹' + fmt(totalInterest);
+  document.getElementById('mInterestSub').textContent = fmtDec(totalInterest/principal*100,1) + '% of principal';
+  document.getElementById('mTotal').textContent = '₹' + fmt(totalPayment);
+  document.getElementById('mTotalSub').textContent = 'Including ₹' + fmt(totalPrepay) + ' prepaid';
+  document.getElementById('mTenure').textContent = Math.floor(actualMonths/12) + 'y ' + (actualMonths%12) + 'm';
+  
+  if (interestSaved > 0) {
+    document.getElementById('mSaved').textContent = '₹' + fmt(interestSaved);
+    document.getElementById('mSavedSub').textContent = fmtDec(interestSaved/baseInterest*100,1) + '% less interest';
+  } else {
+    document.getElementById('mSaved').textContent = '—';
+    document.getElementById('mSavedSub').textContent = 'Add prepayments to save';
+  }
+}
+
+function renderCharts() {
+  // Sample every N months for chart
+  const step = Math.max(1, Math.floor(schedule.length / 60));
+  const labels = [], balData = [], cumInt = [], cumPrin = [];
+  for (let i = 0; i < schedule.length; i += step) {
+    const row = schedule[i];
+    labels.push(row.date);
+    balData.push(Math.round(row.balance));
+    cumInt.push(Math.round(row.cumulInterest));
+    cumPrin.push(Math.round(row.cumulPrincipal));
+  }
+  // Add last row
+  const last = schedule[schedule.length - 1];
+  labels.push(last.date);
+  balData.push(0);
+  cumInt.push(Math.round(last.cumulInterest));
+  cumPrin.push(Math.round(last.cumulPrincipal));
+
+  if (balanceChartInst) balanceChartInst.destroy();
+  const bCtx = document.getElementById('balanceChart').getContext('2d');
+  balanceChartInst = new Chart(bCtx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Outstanding Balance',
+          data: balData,
+          borderColor: '#0E7C6B',
+          backgroundColor: 'rgba(14,124,107,0.08)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          borderWidth: 2
+        },
+        {
+          label: 'Cumulative Interest',
+          data: cumInt,
+          borderColor: '#C9952A',
+          backgroundColor: 'rgba(201,149,42,0.06)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 0,
+          borderWidth: 2,
+          borderDash: [4,3]
+        },
+        {
+          label: 'Cumulative Principal',
+          data: cumPrin,
+          borderColor: '#1A5DAB',
+          backgroundColor: 'rgba(26,93,171,0.06)',
+          fill: false,
+          tension: 0.3,
+          pointRadius: 0,
+          borderWidth: 1.5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: {
+          label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN')
+        }
+      }},
+      scales: {
+        x: { ticks: { maxTicksLimit: 8, font: { size: 10 }, color: '#8A95A3' }, grid: { display: false } },
+        y: { ticks: { callback: v => '₹' + (v/100000).toFixed(0) + 'L', font: { size: 10 }, color: '#8A95A3' }, grid: { color: '#f0f0f0' } }
+      }
+    }
+  });
+
+  // Pie chart
+  const totalInterest = Math.round(last.cumulInterest);
+  const totalPrincipal = parseFloat(document.getElementById('principal').value);
+  const totalPrepay = schedule.reduce((s, r) => s + r.prepay, 0);
+
+  if (pieChartInst) pieChartInst.destroy();
+  const pCtx = document.getElementById('pieChart').getContext('2d');
+  pieChartInst = new Chart(pCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Principal', 'Interest', 'Prepayments'],
+      datasets: [{
+        data: [totalPrincipal - totalPrepay, totalInterest, totalPrepay],
+        backgroundColor: ['#0E7C6B', '#C9952A', '#1A5DAB'],
+        borderWidth: 0,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ' ₹' + ctx.parsed.toLocaleString('en-IN') + ' (' + ((ctx.parsed/(totalPrincipal+totalInterest))*100).toFixed(1) + '%)' } }
+      }
+    }
+  });
+
+  // Breakdown details
+  document.getElementById('breakdownDetails').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div>
+        <div class="progress-label">
+          <span style="font-size:11px;color:var(--teal);font-weight:500;">▉ Principal</span>
+          <span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text);">₹${fmt(totalPrincipal - totalPrepay)}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round((totalPrincipal-totalPrepay)/(totalPrincipal+totalInterest)*100)}%;background:var(--teal-light);"></div></div>
+      </div>
+      <div>
+        <div class="progress-label">
+          <span style="font-size:11px;color:var(--gold);font-weight:500;">▉ Interest</span>
+          <span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text);">₹${fmt(totalInterest)}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(totalInterest/(totalPrincipal+totalInterest)*100)}%;background:var(--gold);"></div></div>
+      </div>
+      ${totalPrepay > 0 ? `<div>
+        <div class="progress-label">
+          <span style="font-size:11px;color:var(--blue);font-weight:500;">▉ Prepayments</span>
+          <span style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text);">₹${fmt(totalPrepay)}</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(totalPrepay/(totalPrincipal+totalInterest)*100)}%;background:var(--blue);"></div></div>
+      </div>` : ''}
+    </div>
+  `;
+
+  // Yearly bar chart (interest vs principal per year)
+  const yearlyData = {};
+  schedule.forEach(row => {
+    const yr = Math.ceil(row.month / 12);
+    if (!yearlyData[yr]) yearlyData[yr] = { p: 0, i: 0 };
+    yearlyData[yr].p += row.principal + row.prepay;
+    yearlyData[yr].i += row.interest;
+  });
+  const yrLabels = Object.keys(yearlyData).map(y => 'Yr' + y);
+  const yrPrin = Object.values(yearlyData).map(d => Math.round(d.p));
+  const yrInt = Object.values(yearlyData).map(d => Math.round(d.i));
+
+  if (yearlyChartInst) yearlyChartInst.destroy();
+  const yCtx = document.getElementById('yearlyBarChart').getContext('2d');
+  yearlyChartInst = new Chart(yCtx, {
+    type: 'bar',
+    data: {
+      labels: yrLabels,
+      datasets: [
+        { label: 'Principal', data: yrPrin, backgroundColor: '#0E7C6B', borderRadius: 3, stack: 'a' },
+        { label: 'Interest', data: yrInt, backgroundColor: '#C9952A', borderRadius: 3, stack: 'a' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toLocaleString('en-IN') } } },
+      scales: {
+        x: { ticks: { font: { size: 9 }, color: '#8A95A3', maxRotation: 0 }, grid: { display: false }, stacked: true },
+        y: { display: false, stacked: true }
+      }
+    }
+  });
+}
+
+function renderTable() {
+  const filterMode = document.getElementById('rowFilter').value;
+  let rows = schedule;
+  
+  if (filterMode === 'events') {
+    rows = schedule.filter(r => r.hasRateChange || r.hasPrepay);
+  } else if (filterMode === 'yearly') {
+    rows = schedule.filter(r => r.month % 12 === 0 || r.month === schedule.length);
+  }
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / ROWS_PER_PAGE));
+  if (currentPage > totalPages) currentPage = totalPages;
+  const start = (currentPage - 1) * ROWS_PER_PAGE;
+  const pageRows = rows.slice(start, start + ROWS_PER_PAGE);
+
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  pageRows.forEach(row => {
+    const tr = document.createElement('tr');
+    if (row.hasRateChange) tr.className = 'highlight-change';
+    if (row.hasPrepay) tr.className = 'highlight-prepay';
+
+    let monthLabel = row.month;
+    let badges = '';
+    if (row.hasRateChange) badges += `<span class="badge-event badge-rate">Rate→${row.rate}%</span>`;
+    if (row.hasPrepay) badges += `<span class="badge-event badge-pay">Prepaid</span>`;
+
+    tr.innerHTML = `
+      <td>${monthLabel}${badges}</td>
+      <td>${row.date}</td>
+      <td>${fmt(row.emi)}</td>
+      <td class="principal">${fmt(row.principal)}</td>
+      <td class="interest">${fmt(row.interest)}</td>
+      <td class="prepay">${row.prepay > 0 ? fmt(row.prepay) : '—'}</td>
+      <td class="balance">${fmt(row.balance)}</td>
+      <td>${fmt(row.cumulInterest)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  renderPagination(totalPages, rows.length);
+}
+
+function renderPagination(totalPages, totalRows) {
+  const pag = document.getElementById('pagination');
+  const start = (currentPage - 1) * ROWS_PER_PAGE + 1;
+  const end = Math.min(currentPage * ROWS_PER_PAGE, totalRows);
+  
+  let html = `<div class="page-info">Showing ${start}–${end} of ${totalRows} rows</div><div class="page-btns">`;
+  html += `<button class="page-btn" onclick="changePage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ Prev</button>`;
+  
+  const maxBtns = 7;
+  let startPage = Math.max(1, currentPage - 3);
+  let endPage = Math.min(totalPages, startPage + maxBtns - 1);
+  if (endPage - startPage < maxBtns - 1) startPage = Math.max(1, endPage - maxBtns + 1);
+  
+  if (startPage > 1) html += `<button class="page-btn" onclick="changePage(1)">1</button><span style="padding:0 4px;color:var(--text3);">…</span>`;
+  for (let p = startPage; p <= endPage; p++) {
+    html += `<button class="page-btn ${p===currentPage?'active':''}" onclick="changePage(${p})">${p}</button>`;
+  }
+  if (endPage < totalPages) html += `<span style="padding:0 4px;color:var(--text3);">…</span><button class="page-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+  
+  html += `<button class="page-btn" onclick="changePage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Next ›</button>`;
+  html += '</div>';
+  pag.innerHTML = html;
+}
+
+function changePage(p) {
+  currentPage = p;
+  renderTable();
+  document.getElementById('tableSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function downloadCSV() {
+  const headers = ['Month','Date','EMI','Principal','Interest','ExtraPayment','Outstanding','CumulativeInterest','Rate%'];
+  const rows = [headers.join(',')];
+  schedule.forEach(r => {
+    rows.push([
+      r.month, r.date,
+      Math.round(r.emi), Math.round(r.principal), Math.round(r.interest),
+      Math.round(r.prepay), Math.round(r.balance), Math.round(r.cumulInterest),
+      r.rate
+    ].join(','));
+  });
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'home_loan_amortization.csv';
+  a.click();
+}
+
+// Auto-calculate on load
+window.onload = () => calculate();
+</script>
+</body>
+</html>
